@@ -1,5 +1,5 @@
 from binance import AsyncClient
-from deepseek import DeepSeek
+from deepseek_sdk import DeepSeek
 import streamlit as st
 from leverage_engine import LeverageStrategyGenerator
 import numpy as np
