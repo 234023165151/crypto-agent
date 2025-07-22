@@ -1,7 +1,9 @@
 from binance import AsyncClient
 from deepseek import DeepSeek
 import streamlit as st
-from leverage_engine import LeverageStrategyGenerator  # 导入杠杆引擎
+from leverage_engine import LeverageStrategyGenerator
+import numpy as np
+import asyncio
 
 class CryptoAnalyzer:
     def __init__(self):
@@ -17,6 +19,7 @@ class CryptoAnalyzer:
         )
     
     async def get_real_time_price(self, symbol="ETHUSDT"):
+        """获取实时价格"""
         ticker = await self.client.get_symbol_ticker(symbol=symbol)
         return float(ticker['price'])
     
