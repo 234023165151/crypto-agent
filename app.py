@@ -12,7 +12,13 @@ st.caption(f"DeepSeek-V3驱动 | 实时风险分析 | {datetime.now().strftime('
 if "analyzer" not in st.session_state:
     st.session_state.analyzer = CryptoAnalyzer()
     st.session_state.current_date = datetime.now().strftime("%Y-%m-%d")
-    asyncio.run(st.session_state.analyzer.connect_exchange())
+    
+    # 创建新的事件循环
+    st.session_state.loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(st.session_state.loop)
+    
+    # 在事件循环中连接交易所
+    st.session_state.loop.run_until_complete(st.session_state.analyzer.connect_exchange())
     st.session_state.messages = [
         {"role": "assistant", "content": "您好！我是您的杠杆交易助手，请随时询问ETH价格分析或交易策略"}
     ]
@@ -61,7 +67,8 @@ async def update_market_data():
         await asyncio.sleep(5)
 
 if "price_task" not in st.session_state:
-    st.session_state.price_task = asyncio.create_task(update_market_data())
+    # 使用正确的事件循环创建任务
+    st.session_state.price_task = st.session_state.loop.create_task(update_market_data())
 
 # 用户输入处理
 if user_input := st.chat_input("输入交易问题，例如：当前适合杠杆做多吗？"):
@@ -70,10 +77,13 @@ if user_input := st.chat_input("输入交易问题，例如：当前适合杠杆
     with st.chat_message("user"):
         st.write(user_input)
     
-    # 获取分析结果
+    # 获取分析结果 - 使用事件循环运行异步函数
     with st.chat_message("assistant", avatar="🤖"):
         with st.spinner("🧠 深度分析中..."):
-            response = await st.session_state.analyzer.analyze_with_deepseek(user_input)
+            # 使用事件循环运行异步函数
+            response = st.session_state.loop.run_until_complete(
+                st.session_state.analyzer.analyze_with_deepseek(user_input)
+            )
             st.write(response)
     
     # 添加助手消息
@@ -85,3 +95,5 @@ import atexit
 def cleanup():
     if "price_task" in st.session_state:
         st.session_state.price_task.cancel()
+    if "loop" in st.session_state:
+        st.session_state.loop.close()
