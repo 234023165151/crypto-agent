@@ -1,6 +1,6 @@
 streamlit
 python-binance
-deepseek
+deepseek-sdk
 numpy
 pandas
-scipy  # 用于概率计算
+scipy
